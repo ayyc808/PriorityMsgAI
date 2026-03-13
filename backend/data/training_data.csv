@@ -1,0 +1,19 @@
+text,urgency_level,emergency_type
+"Building collapsed, people trapped inside need help immediately",Critical,Disaster
+"Multiple casualties reported at the intersection of Main and 5th",Critical,Medical
+"Wildfire spreading rapidly towards residential area",Critical,Environmental
+"Person having a heart attack at downtown plaza",Critical,Medical
+"Flooding on highway 101 cars are being swept away",Critical,Disaster
+"Need medical assistance injured person at park",High,Medical
+"Gas leak detected in apartment building everyone evacuating",High,Environmental
+"Car accident with injuries on freeway",High,Disaster
+"Power lines down blocking road after storm",High,Disaster
+"Smoke coming from building unsure if fire",Medium,Disaster
+"Road flooded hard to pass but no injuries",Medium,Disaster
+"Person needs non-emergency medical transport",Medium,Medical
+"Tree fell on car no injuries",Medium,Disaster
+"Air quality alert in effect for the area",Medium,Environmental
+"Minor traffic accident no injuries",Low,Disaster
+"Stray animal reported in neighborhood",Low,Environmental
+"Noise complaint from nearby construction",Low,Disaster
+"Water main broke minor flooding on street",Low,Disaster
