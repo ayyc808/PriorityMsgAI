@@ -1,14 +1,32 @@
 # ============================================================
-# requirements.txt — Python Dependencies
-# Install all dependencies with: pip install -r requirements.txt
+# Python Dependencies Needed - Python 3.13 Compatible
+# cd backend -> install: pip install -r requirements.txt
 # ============================================================
 
-fastapi==0.110.0
-uvicorn==0.29.0
-transformers==4.40.0
-torch==2.2.2
-pydantic==2.6.4
-pandas==2.2.2
-scikit-learn==1.4.2
-numpy==1.26.4
-python-dotenv==1.0.1
+# Web framework
+fastapi>=0.115.0
+uvicorn[standard]>=0.32.0
+
+# Database
+sqlalchemy>=2.0.36
+
+# Auth / security
+bcrypt>=4.2.0
+python-jose[cryptography]>=3.3.0
+passlib[bcrypt]>=1.7.4
+python-multipart>=0.0.12
+
+# Data validation
+pydantic>=2.10.0
+
+# Data handling
+pandas>=2.2.0
+numpy>=2.0.0
+
+# ML models
+transformers>=4.44.0
+torch>=2.4.0
+scikit-learn>=1.5.0
+
+# Utilities
+python-dotenv>=1.0.0
