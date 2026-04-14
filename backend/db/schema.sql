@@ -1,0 +1,2 @@
+-- Database schema for users and saved messages tables
+-- TODO: Add SQL schema definitions

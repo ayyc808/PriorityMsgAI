@@ -1,0 +1,2 @@
+# Placeholder for Logistic Regression model
+# This will be replaced with actual trained model
