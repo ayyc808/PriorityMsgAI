@@ -13,6 +13,7 @@ ENV/
 .env
 .env.*
 *.sqlite3
+*.db
 instance/*.db
 instance/*.sqlite
 
@@ -43,3 +44,18 @@ Thumbs.db
 
 # Jupyter Notebook
 .ipynb_checkpoints/
+
+# ML models (large files, not committed to GitHub)
+backend/models/roberta_triage/
+*.pkl
+*.pt
+*.bin
+*.safetensors
+
+# Environment secrets
+*.env
+.env.local
+
+# Training artifacts
+model_training/runs/
+model_training/outputs/
