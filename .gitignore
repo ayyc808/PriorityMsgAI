@@ -59,3 +59,11 @@ backend/models/roberta_triage/
 # Training artifacts
 model_training/runs/
 model_training/outputs/
+
+# Dataset files (these are too large for GitHub)
+backend/data/kaggle_disaster.csv
+backend/data/crisislex_combined.csv
+backend/data/crisisnlp_train.tsv
+backend/data/crisisnlp_test.tsv
+backend/data/crisisnlp_dev.tsv
+*.tsv
