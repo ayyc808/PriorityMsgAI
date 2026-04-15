@@ -5,9 +5,20 @@ Combines all 26 CrisisLexT26 labeled CSV files into one file
 import pandas as pd
 import os
 import glob
+import sys
 
+# Added dataset path from command line args so each teammate can pass their own local path when running script
 # Path to the CrisisLexT26 folder
-CRISISLEX_PATH = "/Users/spiderman/Desktop/SJSU/CMPE 189-03/datasets/CrisisLexT26"
+if len(sys.argv) < 2:
+    print("Usage: python3 data/combine_crisislex.py /path/to/CrisisLexT26")
+    print("Example: python3 data/combine_crisislex.py ~/Downloads/CrisisLexT26")
+    sys.exit(1)
+
+CRISISLEX_PATH = os.path.expanduser(sys.argv[1])
+
+if not os.path.exists(CRISISLEX_PATH):
+    print(f"Error: Path not found: {CRISISLEX_PATH}")
+    sys.exit(1)
 
 # Output file
 OUTPUT_FILE = "data/crisislex_combined.csv"
@@ -26,7 +37,6 @@ for f in labeled_files:
         df.columns = df.columns.str.strip()
         if "Tweet Text" in df.columns and "Informativeness" in df.columns:
             df = df[["Tweet Text", "Informativeness"]]  
-        
             df.columns = ["text", "label"]
             # Keep only labeled rows (filter out "Not labeled")
             df = df[df["label"] != "Not labeled"]
