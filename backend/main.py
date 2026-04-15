@@ -7,6 +7,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from database import init_db
+from routes.auth import router as auth_router
 
 # ---------------------------------------------------------------------------
 # App setup
@@ -66,3 +67,5 @@ def root():
 # ---------------------------------------------------------------------------
 # Future routers to be added here later
 # ---------------------------------------------------------------------------
+
+app.include_router(auth_router, prefix="/auth", tags=["Auth"])

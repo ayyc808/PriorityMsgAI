@@ -13,7 +13,6 @@ sqlalchemy>=2.0.36
 # Auth / security
 bcrypt>=4.2.0
 python-jose[cryptography]>=3.3.0
-passlib[bcrypt]>=1.7.4
 python-multipart>=0.0.12
 
 # Data validation
@@ -30,3 +29,7 @@ scikit-learn>=1.5.0
 
 # Utilities
 python-dotenv>=1.0.0
+
+# Data validation
+pydantic>=2.10.0
+pydantic[email]>=2.10.0
