@@ -34,12 +34,12 @@ TFIDF_PATH      = os.path.join(MODELS_DIR, "tfidf_vectorizer.pkl")
 # Label mappings
 # ---------------------------------------------------------------------------
 
-# RoBERTa uses integer labels internally
+# RoBERTa will use integer labels internally
 ID2LABEL = {0: "Critical", 1: "High", 2: "Medium", 3: "Low"}
 LABEL2ID = {"Critical": 0, "High": 1, "Medium": 2, "Low": 3}
 
-# Urgency score mapping — used for priority queue sorting
-# Higher score = higher priority
+# Urgency score mapping will be used for priority queue sorting
+# Higher score means higher priority
 URGENCY_SCORES = {
     "Critical": 1.0,
     "High":     0.75,
@@ -85,8 +85,8 @@ def detect_category(text: str) -> str:
 
 # ---------------------------------------------------------------------------
 # Model loading
-# Models are loaded once when the server starts — not on every request
-# This avoids the overhead of loading 500MB models repeatedly
+# Models are loaded once when the server starts although not on every request
+# This avoids the overhead of loading models repeatedly (about 500 MB)
 # ---------------------------------------------------------------------------
 
 print("Loading models...")
@@ -144,7 +144,7 @@ def classify_message(raw_text: str) -> dict:
               confidence scores, and model breakdown
     """
 
-    # Step 1 — Preprocess
+    # Step 1: Preprocess clean the data
     cleaned_text = preprocess_text(raw_text)
 
     if not cleaned_text.strip():
@@ -153,7 +153,7 @@ def classify_message(raw_text: str) -> dict:
             "raw_text": raw_text,
         }
 
-    # Step 2 — RoBERTa inference
+    # Step 2: RoBERTa inference live
     inputs = roberta_tokenizer(
         cleaned_text,
         return_tensors="pt",
@@ -170,7 +170,7 @@ def classify_message(raw_text: str) -> dict:
 
     roberta_label = ID2LABEL[roberta_id]
 
-    # Step 3 — LR and RF inference
+    # Step 3: LR and RF inference
     tfidf_features = tfidf_vectorizer.transform([cleaned_text])
 
     lr_label    = lr_model.predict(tfidf_features)[0]
@@ -181,10 +181,10 @@ def classify_message(raw_text: str) -> dict:
     rf_probs    = rf_model.predict_proba(tfidf_features)[0]
     rf_conf     = float(max(rf_probs))
 
-    # Step 4 — Detect category
+    # Step 4: Detect category
     category = detect_category(cleaned_text)
 
-    # Step 5 — Build result
+    # Step 5: Build the result
     return {
         # Primary result from RoBERTa
         "raw_text":         raw_text,
@@ -207,8 +207,9 @@ def classify_message(raw_text: str) -> dict:
 
 
 # ---------------------------------------------------------------------------
-# Standalone test — run directly to verify all models load and classify
-# python3 classifier.py
+# Standalone test: Run it directly to verify that all models load and classify
+# For Windows: python classifier.py
+# For Mac/Linux users: python3 classifier.py
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":

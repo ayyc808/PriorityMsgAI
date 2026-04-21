@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from database import init_db
 from routes.auth import router as auth_router
+from routes.classify import router as classify_router
 
 # ---------------------------------------------------------------------------
 # App setup
@@ -65,7 +66,8 @@ def root():
 
 
 # ---------------------------------------------------------------------------
-# Future routers to be added here later
+# Routers Here
 # ---------------------------------------------------------------------------
 
 app.include_router(auth_router, prefix="/auth", tags=["Auth"])
+app.include_router(classify_router, prefix="", tags=["Classify"])
