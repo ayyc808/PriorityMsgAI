@@ -10,6 +10,7 @@ from database import init_db
 from routes.auth import router as auth_router
 from routes.classify import router as classify_router
 from routes.notifications import router as notifications_router
+from routes.analytics import router as analytics_router
 
 # ---------------------------------------------------------------------------
 # App setup
@@ -73,3 +74,4 @@ def root():
 app.include_router(auth_router, prefix="/auth", tags=["Auth"])
 app.include_router(classify_router, prefix="", tags=["Classify"])
 app.include_router(notifications_router, prefix="", tags=["Notifications"])
+app.include_router(analytics_router, prefix="", tags=["Analytics"])
