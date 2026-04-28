@@ -29,7 +29,7 @@ An AI-powered emergency message triage system that classifies and ranks incoming
 ## Project Structure
 
 ```
-RapidRelief/
+PRIORITYMSGAI/
 ├── backend/
 │   ├── main.py                  # FastAPI app entry point
 │   ├── classifier.py            # Model inference + Critical override
@@ -99,14 +99,14 @@ Make sure you have the following installed before starting:
 
 **Mac/Linux:**
 ```bash
-git clone https://github.com/YOUR_TEAM_REPO/RapidRelief.git
-cd RapidRelief
+git clone https://github.com/ayyc808/PriorityMsgAI.git
+cd PriorityMsgAI
 ```
 
 **Windows:**
 ```bash
-git clone https://github.com/YOUR_TEAM_REPO/RapidRelief.git
-cd RapidRelief
+git clone https://github.com/ayyc808/PriorityMsgAI.git
+cd PriorityMsgAI
 ```
 
 ---
@@ -320,6 +320,155 @@ Once the backend is running, you can visit http://localhost:8000/docs for the fu
 |    Classify   | `POST /classify`, `GET /messages`, `POST /messages/{id}/save`, `POST /messages/{id}/archive`, `GET /messages/saved` |
 | Notifications | `GET /notifications`, `GET /notifications/unread-count`, `PATCH /notifications/{id}/read`, `PATCH /notifications/read-all` |
 |   Analytics   | `GET /analytics/overview`, `GET /analytics/urgency-distribution`, `GET /analytics/message-trends`, `GET /analytics/model-performance`, `GET /analytics/confidence-distribution`, `GET /analytics/category-breakdown`, `GET /analytics/recent-activity` |
+
+---
+
+## Testing the API with Swagger UI
+
+Once the backend is running, go to http://localhost:8000/docs to test all endpoints interactively.
+
+---
+
+### Step 1 — Register an Account
+
+1. Click `POST /auth/register` → **Try it out**
+2. Paste the following into the request body:
+```json
+{
+  "first_name": "John",
+  "last_name": "Doe",
+  "email": "john@test.com",
+  "password": "Test1234",
+  "confirm_password": "Test1234",
+  "organization": "Fire",
+  "role": "Dispatcher"
+}
+```
+3. Click **Execute**
+4. Expected response `201`:
+```json
+{
+  "message": "Account created successfully. Please log in.",
+  "user_id": 1
+}
+```
+
+---
+
+### Step 2 — Login and Get JWT Token
+
+1. Click `POST /auth/login` → **Try it out**
+2. Paste:
+```json
+{
+  "email": "john@test.com",
+  "password": "Test1234"
+}
+```
+3. Click **Execute**
+4. Copy the `access_token` value from the response (without the quotes)
+
+---
+
+### Step 3 — Authorize Swagger UI
+
+1. Click the **Authorize** button at the top right of the Swagger UI page
+2. Paste the copied token into the value field
+3. Click **Authorize** then **Close**
+
+All subsequent requests will now include your JWT token automatically.
+
+---
+
+### Step 4 — Classify an Emergency Message
+
+1. Click `POST /classify` → **Try it out**
+2. Paste:
+```json
+{
+  "text": "Building collapsed downtown people trapped inside need help immediately"
+}
+```
+3. Click **Execute**
+4. Expected response includes:
+   - `urgency_label` — Critical, High, Medium, or Low
+   - `category` — Collapse, Fire, Flood, Medical, etc.
+   - `roberta_label`, `lr_label`, `rf_label` — all three model predictions
+   - `override_applied` — true if Critical override keyword was triggered
+   - `message_id` — ID saved to the database
+
+---
+
+### Step 5 — View Message Feed
+
+1. Click `GET /messages` → **Try it out**
+2. Leave parameters as default or filter by urgency (Critical/High/Medium/Low)
+3. Click **Execute**
+4. Returns all classified messages sorted by urgency score (highest first)
+
+---
+
+### Step 6 — Save a Message
+
+1. Click `POST /messages/{message_id}/save` → **Try it out**
+2. Enter the `message_id` from Step 4 (e.g. `1`)
+3. Click **Execute**
+4. Expected response:
+```json
+{
+  "message": "Message saved successfully",
+  "message_id": 1
+}
+```
+
+---
+
+### Step 7 — Check Notifications
+
+1. Click `GET /notifications` → **Try it out**
+2. Click **Execute**
+3. Returns all notifications — Critical and High urgency messages auto-create notifications
+4. Check `is_read: false` for unread notifications
+
+---
+
+### Step 8 — Mark Notification as Read
+
+1. Click `PATCH /notifications/{notification_id}/read` → **Try it out**
+2. Enter `1` in the `notification_id` field
+3. Click **Execute**
+4. Expected response:
+```json
+{
+  "message": "Notification marked as read",
+  "id": 1
+}
+```
+
+---
+
+### Step 9 — View Analytics
+
+Test each analytics endpoint by clicking **Try it out** → **Execute**:
+
+| Endpoint | What it returns |
+|---|---|
+| `GET /analytics/overview` | Total messages, urgency counts, avg confidence |
+| `GET /analytics/urgency-distribution` | Counts and percentages per urgency level |
+| `GET /analytics/message-trends` | Daily message volume for last 7 days |
+| `GET /analytics/model-performance` | Agreement rates and confidence per model |
+| `GET /analytics/confidence-distribution` | RoBERTa confidence score histogram |
+| `GET /analytics/category-breakdown` | Emergency type distribution |
+| `GET /analytics/recent-activity` | Last 10 classified messages |
+
+---
+
+### Step 10 — Archive a Message
+
+1. Click `POST /messages/{message_id}/archive` → **Try it out**
+2. Enter the `message_id`
+3. Click **Execute**
+4. Message is hidden from active feed but kept in database for analytics
 
 ---
 
