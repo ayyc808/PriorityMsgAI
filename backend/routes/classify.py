@@ -64,20 +64,21 @@ class ClassifyRequest(BaseModel):
 
 class ClassifyResponse(BaseModel):
     """Response body for POST /classify"""
-    message_id:     int
-    raw_text:       str
-    cleaned_text:   str
-    urgency_label:  str
-    urgency_score:  float
-    category:       str
-    roberta_label:  str
-    roberta_score:  float
-    lr_label:       str
-    lr_score:       float
-    rf_label:       str
-    rf_score:       float
-    priority_score: float
-    analyzed_at:    str
+    message_id:       int
+    raw_text:         str
+    cleaned_text:     str
+    urgency_label:    str
+    urgency_score:    float
+    category:         str
+    roberta_label:    str
+    roberta_score:    float
+    lr_label:         str
+    lr_score:         float
+    rf_label:         str
+    rf_score:         float
+    priority_score:   float
+    analyzed_at:      str
+    override_applied: bool   # True if Critical override was triggered
 
 # Routes
 
@@ -169,6 +170,7 @@ def classify(
         rf_score=new_message.rf_score,
         priority_score=new_message.urgency_score,
         analyzed_at=new_message.analyzed_at.isoformat(),
+        override_applied=result.get("override_applied", False),
     )
 
 

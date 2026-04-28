@@ -62,6 +62,53 @@ CATEGORY_KEYWORDS = {
     "Disaster":      ["disaster", "emergency", "crisis", "catastrophe", "evacuation"],
 }
 
+# ---------------------------------------------------------------------------
+# Added critical override keywords
+# So if RoBERTa predicts High but any of these severe keywords are present,
+# they get bumped to to Critical urgency (may be better to over-alert(false positives)
+# than under-alert(false negatives) in these  emergency situations)
+# For ex, think of smoke alarms, false alarm vs a real catastrophic fire
+# Over-alert Critical → dispatcher sends a unit → unit arrives → "it's under control, stand down" → minor inconvenience
+# Under-alert Critical → dispatcher deprioritizes → delayed response → potential loss of life
+# ---------------------------------------------------------------------------
+
+CRITICAL_OVERRIDE_KEYWORDS = [
+    # People in danger
+    "trapped", "trapping", "pinned", "buried", "stuck",
+    "unconscious", "unresponsive", "not breathing", "no pulse",
+    "dead", "dying", "fatality", "fatalities", "casualties",
+    "missing person", "missing child",
+
+    # Structural emergencies
+    "collapsed", "collapse", "collapses", "collapsing",
+    "explosion", "exploded", "blast", "detonation",
+    "structural failure", "building failure",
+
+    # Medical emergencies
+    "heart attack", "cardiac arrest", "stroke", "seizure",
+    "overdose", "overdosed", "not responsive",
+    "severe bleeding", "blood loss", "hemorrhage",
+    "anaphylaxis", "allergic reaction severe",
+
+    # Mass casualty
+    "mass casualty", "multiple casualties", "multiple injured",
+    "multiple victims", "shooter", "shooting", "gunshot",
+    "active shooter", "stabbing", "stabbed",
+
+    # Immediate danger
+    "help immediately", "need help now", "emergency now",
+    "send help", "call 911", "life threatening",
+    "life-threatening", "critical condition", "critical injury",
+    "mayday", "sos", "rescue needed", "rescue immediately",
+
+    # Fire emergencies
+    "trapped in fire", "fire spreading", "wildfire spreading",
+    "engulfed in flames", "flames spreading rapidly",
+
+    # Flood/disaster
+    "swept away", "being swept", "drowning", "submerged",
+    "flash flood", "dam break", "levee breach",
+]
 
 def detect_category(text: str) -> str:
     """
@@ -184,46 +231,69 @@ def classify_message(raw_text: str) -> dict:
     # Step 4: Detect category
     category = detect_category(cleaned_text)
 
-    # Step 5: Build the result
+
+    # Step 5: Critical override check
+    # Added so if RoBERTa predicts High but severe keywords are detected,
+    # urgency gets escalate to Critical for better over-alert over under-alert
+    # in life-threatening emergency situations
+    final_label      = roberta_label
+    override_applied = False
+ 
+    if roberta_label == "High":
+        # Added to check if any critical override keywords appear in the cleaned text
+        text_lower = cleaned_text.lower()
+        if any(kw in text_lower for kw in CRITICAL_OVERRIDE_KEYWORDS):
+            final_label      = "Critical"
+            override_applied = True
+
+    # Step 6: Build and returns the result
     return {
         # Primary result from RoBERTa
         "raw_text":         raw_text,
         "cleaned_text":     cleaned_text,
-        "urgency_label":    roberta_label,
+        "urgency_label":    final_label,
         "urgency_score":    round(roberta_conf, 4),
         "category":         category,
 
-        # Per model breakdown
-        "roberta_label":    roberta_label,
+        # each model breakdown
+        # If the override was applied, the roberta model label will show the original
+        # prediction with an override note for transparency
+        "roberta_label":    f"{roberta_label} → Critical (override)" if override_applied else roberta_label,
         "roberta_score":    round(roberta_conf, 4),
         "lr_label":         lr_label,
         "lr_score":         round(lr_conf, 4),
         "rf_label":         rf_label,
         "rf_score":         round(rf_conf, 4),
 
-        # Priority score for dashboard sorting
-        "priority_score":   round(URGENCY_SCORES.get(roberta_label, 0.25), 4),
+        # Priority score uses final label after override
+        "priority_score":   round(URGENCY_SCORES.get(final_label, 0.25), 4),
+ 
+        # Transparency flag — lets frontend show override indicator to dispatcher
+        # So dispatchers know when the system escalated a prediction
+        "override_applied": override_applied,
     }
 
 
 # ---------------------------------------------------------------------------
 # Standalone test: Run it directly to verify that all models load and classify
-# For Windows: python classifier.py
-# For Mac/Linux users: python3 classifier.py
+# For Windows:    python classifier.py
+# For Mac/Linux:  python3 classifier.py
 # ---------------------------------------------------------------------------
-
+ 
 if __name__ == "__main__":
     test_messages = [
         "Building collapsed people trapped inside need help immediately",
         "Smoke coming from downtown help fire",
         "Minor traffic accident no injuries reported",
         "Possible flooding near highway 101",
+        "Person having heart attack at downtown plaza send ambulance now",
+        "Active shooter reported on campus multiple casualties",
     ]
-
+ 
     print("\n" + "=" * 60)
     print("classifier.py standalone test")
     print("=" * 60)
-
+ 
     for msg in test_messages:
         result = classify_message(msg)
         print(f"\nMessage:  {msg}")
@@ -232,3 +302,4 @@ if __name__ == "__main__":
         print(f"RoBERTa:  {result['roberta_label']} ({result['roberta_score']})")
         print(f"LR:       {result['lr_label']} ({result['lr_score']})")
         print(f"RF:       {result['rf_label']} ({result['rf_score']})")
+        print(f"Override: {result['override_applied']}")
