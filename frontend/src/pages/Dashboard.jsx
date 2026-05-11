@@ -1,3 +1,4 @@
+import { useState } from "react";
 import AddMessage from "./AddMessage";
 
 const URGENCY_STYLES = {
@@ -6,6 +7,8 @@ const URGENCY_STYLES = {
   Medium: "medium",
   Low: "low",
 };
+
+const FILTER_OPTIONS = ["Latest", "Critical", "High", "Medium", "Low"];
 
 function formatTime(value) {
   return new Date(value).toLocaleString();
@@ -18,6 +21,11 @@ function Dashboard({
   onCreateMessage,
   user,
 }) {
+  const [activeFilter, setActiveFilter] = useState(user?.default_message_filter || "Latest");
+
+  console.log("[Dashboard] Rendering with messages count:", messages.length);
+  console.log("[Dashboard] Active filter:", activeFilter);
+
   const urgencyCounts = messages.reduce(
     (counts, message) => {
       counts[message.urgency_label] = (counts[message.urgency_label] || 0) + 1;
@@ -25,6 +33,14 @@ function Dashboard({
     },
     { Critical: 0, High: 0, Medium: 0, Low: 0 }
   );
+
+  // Filter and sort messages based on active filter
+  // All filters sort by newest first
+  const filteredMessages = activeFilter === "Latest"
+    ? [...messages].sort((a, b) => new Date(b.analyzed_at) - new Date(a.analyzed_at))
+    : messages
+        .filter(msg => msg.urgency_label === activeFilter)
+        .sort((a, b) => new Date(b.analyzed_at) - new Date(a.analyzed_at));
 
   return (
     <div className="page-stack">
@@ -60,16 +76,32 @@ function Dashboard({
         <section className="panel">
           <div className="panel__header">
             <h3>Messages</h3>
+            <div className="filter-buttons">
+              {FILTER_OPTIONS.map((filter) => (
+                <button
+                  key={filter}
+                  className={`filter-button ${activeFilter === filter ? "filter-button--active" : ""}`}
+                  onClick={() => setActiveFilter(filter)}
+                  type="button"
+                >
+                  {filter}
+                </button>
+              ))}
+            </div>
           </div>
 
           {loading ? <div className="empty-state">Loading queue...</div> : null}
 
-          {!loading && messages.length === 0 ? (
-            <div className="empty-state">No messages.</div>
+          {!loading && filteredMessages.length === 0 ? (
+            <div className="empty-state">
+              {activeFilter === "Latest"
+                ? "No messages."
+                : `No ${activeFilter} urgency messages.`}
+            </div>
           ) : null}
 
           <div className="message-list">
-            {messages.map((message) => (
+            {filteredMessages.map((message) => (
               <article key={message.id} className={`message-card message-card--${URGENCY_STYLES[message.urgency_label]}`}>
                 <div className="message-card__header">
                   <div className="message-card__labels">

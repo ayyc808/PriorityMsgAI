@@ -68,6 +68,7 @@ class User(Base):
     theme               = Column(String(10),  nullable=False, default="light")    # 'light' | 'dark'
     notif_urgency_alerts = Column(Boolean,    nullable=False, default=True)
     notif_sound         = Column(Boolean,     nullable=False, default=True)
+    default_message_filter = Column(String(20), nullable=False, default="Latest") # 'Latest' | 'Critical' | 'High' | 'Medium' | 'Low'
  
     created_at          = Column(DateTime, default=lambda: datetime.now(timezone.utc))
  

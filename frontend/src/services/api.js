@@ -87,7 +87,11 @@ export async function getMessages(token, filters = {}) {
   }
 
   const query = params.toString() ? `?${params.toString()}` : "";
+  console.log("[API] Fetching messages with query:", query || "(no filters)");
+
   const response = await apiRequest(`/messages${query}`, withAuth(token, { method: "GET" }));
+  console.log("[API] Messages response - total:", response.total, "count:", response.messages?.length || 0);
+
   return {
     ...response,
     messages: (response.messages || []).map(normalizeMessage),
@@ -129,4 +133,15 @@ export async function getAnalyticsSnapshot(token) {
     categoryBreakdown,
     recentActivity,
   };
+}
+
+export async function updateSettings(token, settings) {
+  console.log("[API] Updating settings:", settings);
+  return apiRequest(
+    "/auth/settings",
+    withAuth(token, {
+      method: "PATCH",
+      body: JSON.stringify(settings),
+    })
+  );
 }

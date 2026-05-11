@@ -37,7 +37,10 @@ function App() {
   const isDemoMode = token === "demo-token";
 
   useEffect(() => {
+    console.log("[App] useEffect triggered - token:", token ? "exists" : "null", "isDemoMode:", isDemoMode);
+
     if (!token) {
+      console.log("[App] No token, clearing messages");
       setMessages([]);
       setAnalytics(null);
       setLoadError("");
@@ -48,6 +51,7 @@ function App() {
 
     async function loadAppData() {
       if (isDemoMode) {
+        console.log("[App] Demo mode - loading demo data");
         const demoState = getInitialDemoState();
         if (!cancelled) {
           setMessages(demoState.messages);
@@ -57,6 +61,7 @@ function App() {
         return;
       }
 
+      console.log("[App] Loading app data from backend...");
       setLoading(true);
       setLoadError("");
 
@@ -68,12 +73,15 @@ function App() {
           ]);
 
         if (cancelled) {
+          console.log("[App] Request cancelled");
           return;
         }
 
+        console.log("[App] Data loaded - messages:", messageData.messages?.length || 0);
         setMessages(messageData.messages || []);
         setAnalytics(analyticsData);
       } catch (error) {
+        console.error("[App] Error loading data:", error);
         if (!cancelled) {
           setLoadError(error.message || "Could not load application data.");
         }
@@ -119,7 +127,10 @@ function App() {
   };
 
   const handleCreateMessage = async (text) => {
+    console.log("[App] Creating message:", text.substring(0, 50) + "...");
+
     if (isDemoMode) {
+      console.log("[App] Demo mode - using demo classification");
       const created = classifyDemoMessage(text, Date.now());
       setMessages((current) => {
         const nextMessages = [created, ...current];
@@ -129,11 +140,21 @@ function App() {
       return;
     }
 
-    const created = await classifyMessage(token, text);
-    setMessages((current) => [created, ...current]);
+    try {
+      const created = await classifyMessage(token, text);
+      console.log("[App] Message created:", created.message_id || created.id, "urgency:", created.urgency_label);
 
-    const analyticsData = await getAnalyticsSnapshot(token);
-    setAnalytics(analyticsData);
+      setMessages((current) => {
+        console.log("[App] Adding to messages, current count:", current.length);
+        return [created, ...current];
+      });
+
+      const analyticsData = await getAnalyticsSnapshot(token);
+      setAnalytics(analyticsData);
+    } catch (error) {
+      console.error("[App] Error creating message:", error);
+      throw error;
+    }
   };
 
   const handleArchiveMessage = async (messageId) => {

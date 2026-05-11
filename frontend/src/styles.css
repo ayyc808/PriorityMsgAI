@@ -303,6 +303,40 @@ button {
   gap: 16px;
 }
 
+.filter-buttons {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.filter-button {
+  padding: 6px 14px;
+  border-radius: 6px;
+  background: var(--bg-soft);
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.filter-button:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text);
+}
+
+.filter-button--active {
+  background: var(--accent);
+  color: var(--text);
+  border-color: var(--accent);
+}
+
+.filter-button--active:hover {
+  background: var(--accent);
+  opacity: 0.9;
+}
+
 .topbar {
   margin-bottom: 24px;
 }
@@ -388,6 +422,62 @@ button {
   padding: 24px;
   display: grid;
   gap: 12px;
+}
+
+.settings-row {
+  display: grid;
+  gap: 16px;
+  padding: 24px;
+}
+
+.setting-item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 24px;
+}
+
+.setting-item label {
+  display: grid;
+  gap: 4px;
+}
+
+.setting-item label span {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.setting-item label small {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.settings-select {
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: var(--bg-soft);
+  color: var(--text);
+  border: 1px solid var(--line);
+  font-size: 0.95rem;
+  min-width: 180px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.settings-select:hover {
+  border-color: var(--accent);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.settings-select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.save-message {
+  color: var(--success);
+  font-size: 0.9rem;
+  font-weight: 500;
 }
 
 .metric-card span,

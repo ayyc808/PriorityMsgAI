@@ -11,8 +11,9 @@ Handles:
 from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
-from jose import jwt
+from jose import jwt, JWTError
 from pydantic import BaseModel, EmailStr, field_validator
 from dotenv import load_dotenv
 import bcrypt as bcrypt_lib  # using bcrypt directly (passlib incompatible with bcrypt 4.x)
@@ -37,6 +38,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 60))
 # ---------------------------------------------------------------------------
 
 router = APIRouter()
+security = HTTPBearer()
 
 # ---------------------------------------------------------------------------
 # Password hashing
@@ -138,6 +140,7 @@ class AuthResponse(BaseModel):
     last_name: str
     organization: str | None
     role: str | None
+    default_message_filter: str = "Latest"
 
 
 # ---------------------------------------------------------------------------
@@ -230,4 +233,59 @@ def login(request: LoginRequest, db: Session = Depends(get_db)):
         last_name=user.last_name,
         organization=user.organization,
         role=user.role,
+        default_message_filter=user.default_message_filter,
     )
+
+
+class UpdateSettingsRequest(BaseModel):
+    """Request body for PATCH /auth/settings"""
+    default_message_filter: str | None = None
+
+
+@router.patch("/settings")
+def update_settings(
+    request: UpdateSettingsRequest,
+    db: Session = Depends(get_db),
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    """
+    Update user settings/preferences.
+    Currently supports updating default_message_filter.
+    """
+    # Decode JWT to get user_id
+    token = credentials.credentials
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id = int(payload.get("sub"))
+    except (JWTError, TypeError, ValueError):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired token"
+        )
+
+    # Get user from database
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+
+    # Update fields
+    if request.default_message_filter is not None:
+        # Validate filter value
+        valid_filters = ["Latest", "Critical", "High", "Medium", "Low"]
+        if request.default_message_filter not in valid_filters:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Invalid filter. Must be one of: {', '.join(valid_filters)}"
+            )
+        user.default_message_filter = request.default_message_filter
+
+    db.commit()
+    db.refresh(user)
+
+    return {
+        "message": "Settings updated successfully",
+        "default_message_filter": user.default_message_filter
+    }
