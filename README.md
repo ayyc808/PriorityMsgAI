@@ -38,6 +38,7 @@ PRIORITYMSGAI/
 │   ├── .env                     # Environment secrets (not in GitHub)
 │   ├── data/
 │   │   ├── training_data.csv    # Labeled fake test messages
+│   │   ├── balanced_training_data.csv   # balanced dataset (not in GitHub)
 │   │   └── combine_crisislex.py # Script to combine CrisisLex datasets
 │   ├── models/
 │   │   ├── roberta_triage/      # Fine-tuned RoBERTa weights (not in GitHub)
@@ -51,13 +52,31 @@ PRIORITYMSGAI/
 │   │   └── analytics.py         # Analytics endpoints
 │   └── utils/
 │       └── preprocess.py        # Text cleaning pipeline
-├── frontend (tentative)/
+├── frontend/
+│   ├── src/
+│   │   ├── App.jsx
+│   │   ├── context/AuthContext.jsx
+│   │   ├── demoData.js
+│   │   ├── index.js
+│   │   ├── styles.css
+│   │   ├── pages/
+│   │   │   ├── Login.jsx
+│   │   │   ├── Register.jsx
+│   │   │   ├── Dashboard.jsx
+│   │   │   ├── AddMessage.jsx
+│   │   │   ├── Analytics.jsx
+│   │   │   └── Settings.jsx
+│   │   └── services/
+│   │       └── api.js
+│   ├── public/
+│   └── package.json
 ├── model_training/
 │   ├── notebooks/
 │   │   ├── exploration.ipynb       # Dataset exploration + charts
 │   │   ├── model_training.ipynb    # LR + RF training
 │   │   ├── roberta_training.ipynb  # RoBERTa fine-tuning (run on Google Colab)
 │   │   └── evaluation.ipynb        # Model comparison + evaluation
+│   └── retrain_lr_rf.py            # Script to retrain LR and RF models locally
 └── README.md
 ```
 
@@ -67,7 +86,7 @@ PRIORITYMSGAI/
 
 |           Layer          |                     Technology                    |
 |--------------------------|---------------------------------------------------|
-|         Frontend         |                   React, Vite                     |
+|         Frontend         |                       React                       |
 |          Backend         |            Python, FastAPI, SQLAlchemy            |
 |          Database        |                       SQLite                      |
 |      Primary Model       |         RoBERTa (HuggingFace Transformers)        |
@@ -226,11 +245,12 @@ copy data\all_data_en\crisis_consolidated_humanitarian_filtered_lang_en_dev.tsv 
 The trained model files are not stored in GitHub (as it is too large). You have two options you can do, Option A or Option B (for practice and understanding on training models (Google Colab recommended for T4 GPU as training large amt of data takes time - its free!)):
 
 #### Option A — Get model files from  a teammate who has it
-Ask a teammate who has already trained the models to share:
-- `backend/models/lr_model.pkl`
-- `backend/models/rf_model.pkl`
-- `backend/models/tfidf_vectorizer.pkl`
-- `backend/models/roberta_triage/` (entire folder)
+Ask a teammate or request access to the shared Google Drive folder 
+RapidRelief_Models which contains:
+- lr_model.pkl
+- rf_model.pkl
+- tfidf_vectorizer.pkl
+- roberta_triage/ (entire folder)
 
 Place them in the correct locations inside `backend/models/`.
 
@@ -285,7 +305,7 @@ cd backend
 uvicorn main:app --reload
 ```
 
-WARNIING: First startup takes 30-60 seconds to load all three ML models.
+WARNING: First startup takes 30-60 seconds to load all three ML models.
 
 Backend runs at: http://localhost:8000
 API docs (Swagger UI): http://localhost:8000/docs
@@ -297,16 +317,16 @@ Open a new terminal window:
 **Mac/Linux:**
 ```bash
 cd frontend
-npm run dev
+npm start
 ```
 
 **Windows:**
 ```bash
 cd frontend
-npm run dev
+npm start
 ```
 
-Frontend runs at: http://localhost:5173
+Frontend runs at: http://localhost:3000
 
 ---
 

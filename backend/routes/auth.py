@@ -114,16 +114,13 @@ class RegisterRequest(BaseModel):
             raise ValueError("Password must contain at least one number")
         return v
 
-    @field_validator("access_code")
+    @field_validator("middle_name", "organization", "role", "access_code")
     @classmethod
-    def access_code_not_supported(cls, v):
-        """
-        Access code feature is not yet implemented.
-        If any code is entered, return an error.
-        """
-        if v and v.strip():
-            raise ValueError("Access codes are not supported yet. Leave this field empty.")
-        return v
+    def convert_empty_to_none(cls, v):
+        """Convert empty strings to None for optional fields."""
+        if v is None or (isinstance(v, str) and v.strip() == ""):
+            return None
+        return v.strip() if isinstance(v, str) else v
 
 
 class LoginRequest(BaseModel):
@@ -187,6 +184,7 @@ def register(request: RegisterRequest, db: Session = Depends(get_db)):
         password_hash=hash_password(request.password),
         organization=request.organization,
         role=request.role,
+        access_code=request.access_code,
     )
 
     db.add(new_user)

@@ -23,7 +23,7 @@ function Login({ onDemo, onSubmit, isLoading, error }) {
           autoComplete="email"
           name="email"
           onChange={handleChange}
-          placeholder="dispatcher@agency.org"
+          placeholder="ex: user@example.com"
           required
           type="email"
           value={form.email}

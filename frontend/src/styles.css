@@ -244,8 +244,6 @@ button {
 }
 
 .app-shell {
-  display: grid;
-  grid-template-columns: 280px 1fr;
   min-height: 100vh;
 }
 
@@ -256,6 +254,12 @@ button {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 280px;
+  overflow-y: auto;
 }
 
 .sidebar__brand h2 {
@@ -281,7 +285,9 @@ button {
 }
 
 .main-shell {
-  padding: 32px;
+  padding: 40px 64px;
+  margin-left: 280px;
+  max-width: 1600px;
 }
 
 .topbar,
@@ -322,7 +328,31 @@ button {
 .stack-list,
 .message-list {
   display: grid;
-  gap: 20px;
+  gap: 24px;
+}
+
+.message-list {
+  max-height: 600px;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.message-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.message-list::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+}
+
+.message-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+}
+
+.message-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
 }
 
 .status-strip {
@@ -337,7 +367,7 @@ button {
 
 .panel {
   border-radius: 28px;
-  padding: 24px;
+  padding: 32px;
 }
 
 .panel--accent {
@@ -348,16 +378,16 @@ button {
 
 .metric-row {
   display: grid;
-  gap: 14px;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 20px;
+  grid-template-columns: repeat(4, minmax(140px, 1fr));
 }
 
 .metric-card,
 .detail-card {
   border-radius: 24px;
-  padding: 18px;
+  padding: 24px;
   display: grid;
-  gap: 8px;
+  gap: 12px;
 }
 
 .metric-card span,
@@ -416,7 +446,7 @@ button {
   border-radius: 24px;
   border: 1px solid var(--line);
   background: rgba(255, 255, 255, 0.04);
-  padding: 18px;
+  padding: 24px;
 }
 
 .message-card--critical {
@@ -575,6 +605,12 @@ button {
 
   .sidebar {
     padding-bottom: 18px;
+    position: relative;
+    width: 100%;
+  }
+
+  .main-shell {
+    margin-left: 0;
   }
 }
 

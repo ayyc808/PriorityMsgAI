@@ -79,6 +79,16 @@ function Register({ onSubmit, isLoading, error }) {
         </label>
       </div>
 
+      <label className="field">
+        <span>Access Code (Optional)</span>
+        <input
+          name="access_code"
+          onChange={handleChange}
+          type="text"
+          value={form.access_code}
+        />
+      </label>
+
       {error ? <div className="banner banner--error">{error}</div> : null}
       {success ? <div className="banner banner--success">{success}</div> : null}
 

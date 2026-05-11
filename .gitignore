@@ -67,4 +67,13 @@ backend/data/crisislex_combined.csv
 backend/data/crisisnlp_train.tsv
 backend/data/crisisnlp_test.tsv
 backend/data/crisisnlp_dev.tsv
+backend/data/balanced_training_data.csv
 *.tsv
+
+# Database backups
+*.backup
+*.db.backup
+
+# Package lock files (auto-generated, not committed)
+package-lock.json
+frontend/package-lock.json

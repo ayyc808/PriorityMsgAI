@@ -61,7 +61,8 @@ class User(Base):
     password_hash       = Column(String(255), nullable=False)   # bcrypt hash
     organization        = Column(String(100), nullable=True)    # Police / Fire / EMS / Analyst …
     role                = Column(String(80),  nullable=True)    # Dispatcher / Analyst …
- 
+    access_code         = Column(String(50),  nullable=True)    # Optional company access code
+
     # Settings / preferences
     model_preference    = Column(String(20),  nullable=False, default="roberta")  # 'roberta' | 'all'
     theme               = Column(String(10),  nullable=False, default="light")    # 'light' | 'dark'

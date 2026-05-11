@@ -22,6 +22,13 @@ async function apiRequest(path, options = {}) {
   }
 
   if (!response.ok) {
+    // Handle Pydantic validation errors (422)
+    if (Array.isArray(data?.detail)) {
+      const errors = data.detail.map(err => err.msg || JSON.stringify(err)).join(', ');
+      throw new Error(errors);
+    }
+
+    // Handle regular error responses
     const detail = data?.detail || data?.message || `Request failed with ${response.status}`;
     throw new Error(detail);
   }

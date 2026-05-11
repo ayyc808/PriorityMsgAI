@@ -73,41 +73,105 @@ CATEGORY_KEYWORDS = {
 # ---------------------------------------------------------------------------
 
 CRITICAL_OVERRIDE_KEYWORDS = [
-    # People in danger
-    "trapped", "trapping", "pinned", "buried", "stuck",
-    "unconscious", "unresponsive", "not breathing", "no pulse",
-    "dead", "dying", "fatality", "fatalities", "casualties",
-    "missing person", "missing child",
+    # People in immediate life-threatening danger (be specific to avoid false positives)
+    "trapped in fire", "trapped in building", "trapped under", "trapped inside",
+    "pinned under", "pinned down", "buried alive", "buried under",
+    "unconscious", "unresponsive", "not breathing", "no pulse", "stopped breathing",
+    "dead", "dying", "fatality", "fatalities", "multiple casualties",
+    "missing person", "missing child", "child missing",
 
     # Structural emergencies
-    "collapsed", "collapse", "collapses", "collapsing",
-    "explosion", "exploded", "blast", "detonation",
-    "structural failure", "building failure",
+    "building collapsed", "structure collapsed", "roof collapsed",
+    "explosion", "exploded", "blast", "detonation", "bomb",
+    "structural failure", "building failure", "partial collapse",
 
-    # Medical emergencies
-    "heart attack", "cardiac arrest", "stroke", "seizure",
-    "overdose", "overdosed", "not responsive",
-    "severe bleeding", "blood loss", "hemorrhage",
-    "anaphylaxis", "allergic reaction severe",
+    # Medical emergencies (life-threatening only)
+    "heart attack", "heartattack", "cardiac arrest", "cardiacarrest",
+    "stroke", "seizure",
+    "overdose", "overdosed", "not responsive", "unresponsive",
+    "severe bleeding", "blood loss", "hemorrhage", "bleeding out",
+    "losing blood", "losing a lot of blood", "massive bleeding", "heavy bleeding",
+    "anaphylaxis", "anaphylactic shock", "severe allergic reaction",
+    "choking", "can't breathe", "cannot breathe", "cant breathe", "cantbreathe",
 
-    # Mass casualty
-    "mass casualty", "multiple casualties", "multiple injured",
-    "multiple victims", "shooter", "shooting", "gunshot",
-    "active shooter", "stabbing", "stabbed",
+    # Severe trauma / amputations
+    "leg cut off", "arm cut off", "hand cut off", "foot cut off",
+    "limb severed", "limb detached", "limbs detached", "amputation",
+    "severed limb", "severed arm", "severed leg", "dismembered",
+    "cut off leg", "cut off arm", "lost limb", "lost a limb",
+    "crushed limb", "mangled limb", "traumatic amputation",
 
-    # Immediate danger
-    "help immediately", "need help now", "emergency now",
-    "send help", "call 911", "life threatening",
-    "life-threatening", "critical condition", "critical injury",
-    "mayday", "sos", "rescue needed", "rescue immediately",
+    # Mass casualty / violence
+    "mass casualty", "multiple casualties", "multiple injured", "many injured",
+    "multiple victims", "mass shooting", "active shooter", "shooter on",
+    "gunshot wound", "shot fired", "shots fired", "stabbing", "stabbed",
 
-    # Fire emergencies
-    "trapped in fire", "fire spreading", "wildfire spreading",
-    "engulfed in flames", "flames spreading rapidly",
+    # Immediate danger signals
+    "help immediately", "need help now", "emergency now", "urgent help needed",
+    "send help now", "life threatening", "life-threatening",
+    "critical condition", "critical injury", "critically injured",
+    "mayday", "sos", "rescue needed immediately", "immediate rescue",
 
-    # Flood/disaster
-    "swept away", "being swept", "drowning", "submerged",
-    "flash flood", "dam break", "levee breach",
+    # Fire emergencies (spreading/engulfing)
+    "fire spreading", "wildfire spreading", "rapidly spreading",
+    "engulfed in flames", "flames spreading rapidly", "out of control fire",
+    "people trapped fire", "trapped by fire",
+
+    # Flood/drowning disasters
+    "swept away", "being swept away", "drowning", "person drowning",
+    "flash flood", "dam break", "dam failure", "levee breach",
+    "submerged vehicle", "vehicle submerged", "car submerged",
+]
+
+# ---------------------------------------------------------------------------
+# De-escalation keywords - Downgrade High/Critical to Medium/Low
+# RoBERTa was trained on crisis-heavy data and over-classifies minor incidents
+# These keywords indicate non-emergency or minor situations that should be downgraded
+# Applied AFTER RoBERTa prediction to fix over-classification
+# ---------------------------------------------------------------------------
+
+LOW_PRIORITY_INDICATORS = [
+    # No injuries/damage - clear Low priority
+    "no injuries", "no injury", "no one injured", "no one hurt",
+    "no reported injuries", "no reported injury", "no serious injuries",
+    "everyone ok", "everyone okay", "all safe", "no damage",
+    "minor damage", "slight damage", "both drivers okay",
+    "both drivers ok", "everyone safe", "all okay",
+
+    # Minor traffic incidents
+    "minor accident", "small accident", "fender bender",
+    "minor collision", "small collision", "minor crash",
+    "minor traffic", "small crash",
+    "traffic jam", "slow traffic", "congestion", "heavy traffic",
+
+    # Non-urgent mechanical issues
+    "stuck in elevator", "elevator stuck",
+    "stuck in mud", "car stuck", "vehicle stuck",
+
+    # Resolved/under control
+    "under control", "contained", "being handled",
+    "already resolved", "no longer an issue", "false alarm",
+
+    # Person is okay/recovered
+    "i am fine", "i am ok", "i am okay", "im fine", "im ok", "im okay",
+    "but i am fine", "but im fine", "feeling better", "feeling fine",
+    "all better", "recovered", "no longer in danger",
+
+    # Near-miss/didn't happen
+    "almost had", "nearly had", "thought i was", "thought i had",
+    "turned out to be nothing", "not as bad as", "wasnt serious",
+    "was not serious", "not serious",
+]
+
+MEDIUM_PRIORITY_INDICATORS = [
+    # Uncertainty - needs investigation but not urgent
+    "possible", "potential", "suspected", "might be", "may be",
+    "unsure", "not sure", "unclear",
+
+    # Minor incidents needing response
+    "small fire", "minor fire", "smoke alarm", "burnt food",
+    "minor flooding", "small flood", "water leak",
+    "minor injury", "small cut", "minor burn",
 ]
 
 def detect_category(text: str) -> str:
@@ -232,45 +296,72 @@ def classify_message(raw_text: str) -> dict:
     category = detect_category(cleaned_text)
 
 
-    # Step 5: Critical override check
-    # Added so if RoBERTa predicts High but severe keywords are detected,
-    # urgency gets escalate to Critical for better over-alert over under-alert
-    # in life-threatening emergency situations
+    # Step 5: Critical override check (escalation)
+    # If RoBERTa misses critical keywords, escalate to Critical for safety
     final_label      = roberta_label
     override_applied = False
- 
-    if roberta_label == "High":
-        # Added to check if any critical override keywords appear in the cleaned text
-        text_lower = cleaned_text.lower()
-        if any(kw in text_lower for kw in CRITICAL_OVERRIDE_KEYWORDS):
+    deescalated      = False
+
+    text_lower = cleaned_text.lower()
+
+    # Check for critical keywords regardless of RoBERTa prediction
+    # Safety-first approach: escalate ANY prediction to Critical if danger keywords found
+    if any(kw in text_lower for kw in CRITICAL_OVERRIDE_KEYWORDS):
+        if roberta_label != "Critical":
             final_label      = "Critical"
             override_applied = True
 
+    # Step 5b: De-escalation check (after override)
+    # Check if person says they're okay/it's a near-miss
+    # This runs AFTER escalation to handle "almost had heart attack but I'm fine"
+    # De-escalate from the FINAL label (which may have been escalated)
+
+    # Check for LOW priority indicators
+    if any(kw in text_lower for kw in LOW_PRIORITY_INDICATORS):
+        if final_label in ["High", "Critical"]:
+            final_label = "Low"
+            deescalated = True
+            override_applied = False  # Cancel the override since person is fine
+
+    # Check for MEDIUM priority indicators (only if not already downgraded to Low)
+    if not deescalated and any(kw in text_lower for kw in MEDIUM_PRIORITY_INDICATORS):
+        if final_label in ["High", "Critical"]:
+            final_label = "Medium"
+            deescalated = True
+            override_applied = False  # Cancel the override
+
     # Step 6: Build and returns the result
+    # Build display label showing any escalation or de-escalation
+    if override_applied:
+        display_label = f"{roberta_label} → Critical (escalated)"
+    elif deescalated:
+        display_label = f"{roberta_label} → {final_label} (de-escalated)"
+    else:
+        display_label = roberta_label
+
     return {
-        # Primary result from RoBERTa
+        # Primary result (after escalation/de-escalation)
         "raw_text":         raw_text,
         "cleaned_text":     cleaned_text,
         "urgency_label":    final_label,
         "urgency_score":    round(roberta_conf, 4),
         "category":         category,
 
-        # each model breakdown
-        # If the override was applied, the roberta model label will show the original
-        # prediction with an override note for transparency
-        "roberta_label":    f"{roberta_label} → Critical (override)" if override_applied else roberta_label,
+        # Model breakdown
+        # Shows original RoBERTa prediction with escalation/de-escalation note
+        "roberta_label":    display_label,
         "roberta_score":    round(roberta_conf, 4),
         "lr_label":         lr_label,
         "lr_score":         round(lr_conf, 4),
         "rf_label":         rf_label,
         "rf_score":         round(rf_conf, 4),
 
-        # Priority score uses final label after override
+        # Priority score uses final label after adjustments
         "priority_score":   round(URGENCY_SCORES.get(final_label, 0.25), 4),
- 
-        # Transparency flag — lets frontend show override indicator to dispatcher
-        # So dispatchers know when the system escalated a prediction
+
+        # Transparency flags for frontend
         "override_applied": override_applied,
+        "deescalated":      deescalated,
     }
 
 
